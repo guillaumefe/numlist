@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Liste Numérotée</title>
+  <title>Numlist</title>
   <style>
+    /* Reset default margins and set font and background */
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -14,6 +15,7 @@
       align-items: center;
       height: 100vh;
     }
+    /* Container styling */
     .container {
       background: #fff;
       border-radius: 12px;
@@ -22,6 +24,7 @@
       width: 100%;
       max-width: 600px;
     }
+    /* Main heading styling */
     h1 {
       margin-bottom: 16px;
       font-size: 24px;
@@ -33,9 +36,11 @@
       flex-direction: column;
       gap: 12px;
     }
+    /* Textarea and input base styling */
     textarea, select, input[type=checkbox] + label {
       font-size: 14px;
     }
+    /* Input textarea styling */
     textarea {
       width: 100%;
       height: 140px;
@@ -44,22 +49,26 @@
       border-radius: 8px;
       resize: vertical;
     }
+    /* Controls row styling */
     .controls {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       align-items: center;
     }
+    /* Dropdown styling */
     select {
       padding: 8px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+    /* Checkbox container styling */
     .checkbox {
       display: flex;
       align-items: center;
       gap: 4px;
     }
+    /* Button styling */
     button {
       padding: 10px 16px;
       font-size: 16px;
@@ -77,6 +86,7 @@
     button:hover:not(:disabled) {
       background: #0056b3;
     }
+    /* Output area styling */
     .output-area {
       position: relative;
       display: flex;
@@ -86,6 +96,7 @@
     .copy-btn {
       align-self: flex-end;
     }
+    /* Copy notification styling */
     .copied {
       position: absolute;
       top: -24px;
@@ -102,11 +113,11 @@
 </head>
 <body>
   <div class="container">
-    <h1>Numéroteur de Liste</h1>
+    <h1>Numlist</h1>
     <div class="area">
-      <textarea id="input" placeholder="Entrez votre liste, une entrée par ligne..."></textarea>
+      <textarea id="input" placeholder="Enter your list, one item per line..."></textarea>
       <div class="controls">
-        <label for="format">Format :</label>
+        <label for="format">Numbering format:</label>
         <select id="format">
           <option value="1">1, 2, 3...</option>
           <option value="a">a, b, c...</option>
@@ -115,18 +126,19 @@
         </select>
         <div class="checkbox">
           <input type="checkbox" id="newline" />
-          <label for="newline">Saut de ligne entre chaque élément</label>
+          <label for="newline">Add blank line between items</label>
         </div>
-        <button id="number">Numéroter</button>
+        <button id="number">Number List</button>
       </div>
       <div class="output-area">
-        <span class="copied" id="copied-msg">Copié !</span>
-        <textarea id="output" readonly placeholder="Résultat numéroté..."></textarea>
-        <button id="copy" class="copy-btn" disabled>Copier</button>
+        <span class="copied" id="copied-msg">Copied!</span>
+        <textarea id="output" readonly placeholder="Your numbered list will appear here..."></textarea>
+        <button id="copy" class="copy-btn" disabled>Copy</button>
       </div>
     </div>
   </div>
   <script>
+    // Get references to DOM elements
     const inputEl = document.getElementById('input');
     const formatEl = document.getElementById('format');
     const newlineEl = document.getElementById('newline');
@@ -135,68 +147,110 @@
     const copyBtn = document.getElementById('copy');
     const copiedMsg = document.getElementById('copied-msg');
 
-    // Load saved state
-    window.addEventListener('load', () => {
-      inputEl.value = localStorage.getItem('liste_input') || '';
-      formatEl.value = localStorage.getItem('liste_format') || '1';
-      newlineEl.checked = localStorage.getItem('liste_newline') === 'true';
-      outputEl.value = localStorage.getItem('liste_output') || '';
-      copyBtn.disabled = !outputEl.value.trim();
-    });
+    // Unique keys for localStorage
+    const STORAGE = {
+      INPUT: 'numlist_input',
+      FORMAT: 'numlist_format',
+      NEWLINE: 'numlist_newline',
+      OUTPUT: 'numlist_output'
+    };
 
-    // Save state
-    function save() {
-      localStorage.setItem('liste_input', inputEl.value);
-      localStorage.setItem('liste_format', formatEl.value);
-      localStorage.setItem('liste_newline', newlineEl.checked);
-      localStorage.setItem('liste_output', outputEl.value);
-    }
-
+    /**
+     * Convert a number to lowercase Roman numerals
+     * @param {number} num - The number to convert
+     * @returns {string} Roman numeral representation
+     */
     function toRoman(num) {
       const romans = [ ['M',1000], ['CM',900], ['D',500], ['CD',400], ['C',100], ['XC',90], ['L',50], ['XL',40], ['X',10], ['IX',9], ['V',5], ['IV',4], ['I',1] ];
       let result = '';
       romans.forEach(([letter, value]) => {
-        while (num >= value) { result += letter; num -= value; }
+        while (num >= value) {
+          result += letter;
+          num -= value;
+        }
       });
       return result.toLowerCase();
     }
 
+    // Load saved state from localStorage on page load
+    window.addEventListener('load', () => {
+      inputEl.value = localStorage.getItem(STORAGE.INPUT) || '';
+      formatEl.value = localStorage.getItem(STORAGE.FORMAT) || '1';
+      newlineEl.checked = localStorage.getItem(STORAGE.NEWLINE) === 'true';
+      outputEl.value = localStorage.getItem(STORAGE.OUTPUT) || '';
+      copyBtn.disabled = !outputEl.value.trim();
+    });
+
+    // Save current state to localStorage
+    function saveState() {
+      localStorage.setItem(STORAGE.INPUT, inputEl.value);
+      localStorage.setItem(STORAGE.FORMAT, formatEl.value);
+      localStorage.setItem(STORAGE.NEWLINE, newlineEl.checked);
+      localStorage.setItem(STORAGE.OUTPUT, outputEl.value);
+    }
+
+    /**
+     * Remove existing numeric or Roman prefixes from a line
+     * @param {string} line - The line to sanitize
+     * @returns {string} The cleaned line without prefixes
+     */
+    function stripPrefix(line) {
+      return line.replace(/^\s*([0-9]+|[a-zA-Z]|[ivxlcdmIVXLCDM]+)\.[ \t]*/, '');
+    }
+
+    /**
+     * Generate the numbered list based on user input and options
+     */
     function numberList() {
       const lines = inputEl.value
         .split(/\r?\n/)
-        .map(line => line.trim())
+        .map(line => stripPrefix(line.trim()))
         .filter(line => line);
-      const fmt = formatEl.value;
-      const numbered = lines.map((line, i) => {
+
+      const format = formatEl.value;
+      const numbered = lines.map((line, index) => {
         let prefix;
-        switch(fmt) {
-          case 'a': prefix = String.fromCharCode(97 + i) + '.'; break;
-          case 'A': prefix = String.fromCharCode(65 + i) + '.'; break;
-          case 'i': prefix = toRoman(i+1) + '.'; break;
-          default: prefix = (i+1) + '.';
+        switch(format) {
+          case 'a':
+            prefix = String.fromCharCode(97 + index) + '.';
+            break;
+          case 'A':
+            prefix = String.fromCharCode(65 + index) + '.';
+            break;
+          case 'i':
+            prefix = toRoman(index + 1) + '.';
+            break;
+          default:
+            prefix = (index + 1) + '.';
         }
-        return prefix + ' ' + line;
+        return `${prefix} ${line}`;
       });
+
+      // Join items with or without extra newlines
       outputEl.value = newlineEl.checked
         ? numbered.join('\n\n')
         : numbered.join('\n');
 
-      copyBtn.disabled = !numbered.length;
-      save();
+      copyBtn.disabled = numbered.length === 0;
+      saveState();
     }
 
-    function copyOutput() {
+    /**
+     * Copy the generated list to the clipboard and show a confirmation
+     */
+    function copyToClipboard() {
       navigator.clipboard.writeText(outputEl.value).then(() => {
         copiedMsg.classList.add('visible');
         setTimeout(() => copiedMsg.classList.remove('visible'), 1500);
       });
     }
 
-    inputEl.addEventListener('input', save);
-    formatEl.addEventListener('change', save);
-    newlineEl.addEventListener('change', save);
+    // Event listeners for user interactions
+    inputEl.addEventListener('input', saveState);
+    formatEl.addEventListener('change', saveState);
+    newlineEl.addEventListener('change', saveState);
     numberBtn.addEventListener('click', numberList);
-    copyBtn.addEventListener('click', copyOutput);
+    copyBtn.addEventListener('click', copyToClipboard);
   </script>
 </body>
 </html>
