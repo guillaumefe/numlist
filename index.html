@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liste Numérotée</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      padding: 24px;
+      width: 100%;
+      max-width: 600px;
+    }
+    h1 {
+      margin-bottom: 16px;
+      font-size: 24px;
+      text-align: center;
+      color: #333;
+    }
+    .area {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    textarea, select, input[type=checkbox] + label {
+      font-size: 14px;
+    }
+    textarea {
+      width: 100%;
+      height: 140px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      resize: vertical;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    select {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .checkbox {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #007bff;
+      color: #fff;
+      transition: background 0.3s;
+    }
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background: #0056b3;
+    }
+    .output-area {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .copy-btn {
+      align-self: flex-end;
+    }
+    .copied {
+      position: absolute;
+      top: -24px;
+      right: 0;
+      font-size: 12px;
+      color: green;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .copied.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Numéroteur de Liste</h1>
+    <div class="area">
+      <textarea id="input" placeholder="Entrez votre liste, une entrée par ligne..."></textarea>
+      <div class="controls">
+        <label for="format">Format :</label>
+        <select id="format">
+          <option value="1">1, 2, 3...</option>
+          <option value="a">a, b, c...</option>
+          <option value="A">A, B, C...</option>
+          <option value="i">i, ii, iii...</option>
+        </select>
+        <div class="checkbox">
+          <input type="checkbox" id="newline" />
+          <label for="newline">Saut de ligne entre chaque élément</label>
+        </div>
+        <button id="number">Numéroter</button>
+      </div>
+      <div class="output-area">
+        <span class="copied" id="copied-msg">Copié !</span>
+        <textarea id="output" readonly placeholder="Résultat numéroté..."></textarea>
+        <button id="copy" class="copy-btn" disabled>Copier</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const inputEl = document.getElementById('input');
+    const formatEl = document.getElementById('format');
+    const newlineEl = document.getElementById('newline');
+    const outputEl = document.getElementById('output');
+    const numberBtn = document.getElementById('number');
+    const copyBtn = document.getElementById('copy');
+    const copiedMsg = document.getElementById('copied-msg');
+
+    // Load saved state
+    window.addEventListener('load', () => {
+      inputEl.value = localStorage.getItem('liste_input') || '';
+      formatEl.value = localStorage.getItem('liste_format') || '1';
+      newlineEl.checked = localStorage.getItem('liste_newline') === 'true';
+      outputEl.value = localStorage.getItem('liste_output') || '';
+      copyBtn.disabled = !outputEl.value.trim();
+    });
+
+    // Save state
+    function save() {
+      localStorage.setItem('liste_input', inputEl.value);
+      localStorage.setItem('liste_format', formatEl.value);
+      localStorage.setItem('liste_newline', newlineEl.checked);
+      localStorage.setItem('liste_output', outputEl.value);
+    }
+
+    function toRoman(num) {
+      const romans = [ ['M',1000], ['CM',900], ['D',500], ['CD',400], ['C',100], ['XC',90], ['L',50], ['XL',40], ['X',10], ['IX',9], ['V',5], ['IV',4], ['I',1] ];
+      let result = '';
+      romans.forEach(([letter, value]) => {
+        while (num >= value) { result += letter; num -= value; }
+      });
+      return result.toLowerCase();
+    }
+
+    function numberList() {
+      const lines = inputEl.value
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line);
+      const fmt = formatEl.value;
+      const numbered = lines.map((line, i) => {
+        let prefix;
+        switch(fmt) {
+          case 'a': prefix = String.fromCharCode(97 + i) + '.'; break;
+          case 'A': prefix = String.fromCharCode(65 + i) + '.'; break;
+          case 'i': prefix = toRoman(i+1) + '.'; break;
+          default: prefix = (i+1) + '.';
+        }
+        return prefix + ' ' + line;
+      });
+      outputEl.value = newlineEl.checked
+        ? numbered.join('\n\n')
+        : numbered.join('\n');
+
+      copyBtn.disabled = !numbered.length;
+      save();
+    }
+
+    function copyOutput() {
+      navigator.clipboard.writeText(outputEl.value).then(() => {
+        copiedMsg.classList.add('visible');
+        setTimeout(() => copiedMsg.classList.remove('visible'), 1500);
+      });
+    }
+
+    inputEl.addEventListener('input', save);
+    formatEl.addEventListener('change', save);
+    newlineEl.addEventListener('change', save);
+    numberBtn.addEventListener('click', numberList);
+    copyBtn.addEventListener('click', copyOutput);
+  </script>
+</body>
+</html>
