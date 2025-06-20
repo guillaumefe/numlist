@@ -6,9 +6,7 @@
   <title>Numlist</title>
   <style>
     /* Mobile-first base styles */
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -32,113 +30,44 @@
       text-align: center;
       color: #333;
     }
-    .area {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    textarea, select, input[type=checkbox] + label, button {
-      font-size: 14px;
-    }
+    .area { display: flex; flex-direction: column; gap: 12px; }
+    textarea, select, input[type=checkbox] + label, button { font-size: 14px; }
     textarea {
-      width: 100%;
-      min-height: 120px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      resize: vertical;
+      width: 100%; min-height: 120px; padding: 10px;
+      border: 1px solid #ccc; border-radius: 8px; resize: vertical;
     }
-    .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .controls { display: flex; flex-direction: column; gap: 8px; }
     select {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+      width: 100%; padding: 8px;
+      border: 1px solid #ccc; border-radius: 6px;
     }
-    .checkbox {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+    .checkbox { display: flex; align-items: center; gap: 4px; }
     button {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #007bff;
-      color: #fff;
-      transition: background 0.3s;
+      width: 100%; padding: 10px;
+      border: none; border-radius: 8px;
+      cursor: pointer; background: #007bff;
+      color: #fff; transition: background 0.3s;
     }
-    button:disabled {
-      background: #aaa;
-      cursor: not-allowed;
-    }
-    button:hover:not(:disabled) {
-      background: #0056b3;
-    }
-    .output-area {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .copy-btn {
-      align-self: flex-end;
-      width: auto;
-      padding: 8px 12px;
-    }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+    button:hover:not(:disabled) { background: #0056b3; }
+    .output-area { display: flex; flex-direction: column; gap: 8px; }
+    .copy-btn { align-self: flex-end; width: auto; padding: 8px 12px; }
     .toast {
-      visibility: hidden;
-      min-width: 200px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 4px;
-      padding: 12px;
-      position: fixed;
-      z-index: 1;
-      left: 50%;
-      bottom: 30px;
-      font-size: 14px;
+      visibility: hidden; min-width: 200px;
+      background: #333; color: #fff; text-align: center;
+      border-radius: 4px; padding: 12px;
+      position: fixed; z-index: 1; left: 50%; bottom: 30px;
       transform: translateX(-50%);
-      opacity: 0;
-      transition: opacity 0.5s, visibility 0.5s;
+      opacity: 0; transition: opacity 0.5s, visibility 0.5s;
     }
-    .toast.show {
-      visibility: visible;
-      opacity: 1;
-    }
-    /* Tablet and up */
+    .toast.show { visibility: visible; opacity: 1; }
     @media (min-width: 600px) {
-      .container {
-        padding: 24px;
-      }
-      h1 {
-        font-size: 24px;
-      }
-      .controls {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 12px;
-      }
-      select {
-        width: auto;
-      }
-      button {
-        width: auto;
-      }
+      .container { padding: 24px; }
+      h1 { font-size: 24px; }
+      .controls { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; }
+      select, button { width: auto; }
     }
-    /* Desktop and up */
-    @media (min-width: 900px) {
-      .container {
-        max-width: 600px;
-      }
-    }
+    @media (min-width: 900px) { .container { max-width: 600px; } }
   </style>
 </head>
 <body>
@@ -169,7 +98,6 @@
   </div>
   <div id="toast" class="toast">Copied to clipboard!</div>
   <script>
-    // Get references to DOM elements
     const inputEl = document.getElementById('input');
     const formatEl = document.getElementById('format');
     const newlineEl = document.getElementById('newline');
@@ -179,7 +107,6 @@
     const copyBtn = document.getElementById('copy');
     const toast = document.getElementById('toast');
 
-    // Unique keys for localStorage
     const STORAGE = {
       INPUT: 'numlist_input',
       FORMAT: 'numlist_format',
@@ -187,24 +114,13 @@
       OUTPUT: 'numlist_output'
     };
 
-    /**
-     * Convert a number to lowercase Roman numerals
-     * @param {number} num - The number to convert
-     * @returns {string} Roman numeral representation
-     */
     function toRoman(num) {
-      const romans = [ ['M',1000], ['CM',900], ['D',500], ['CD',400], ['C',100], ['XC',90], ['L',50], ['XL',40], ['X',10], ['IX',9], ['V',5], ['IV',4], ['I',1] ];
+      const romans = [['M',1000],['CM',900],['D',500],['CD',400],['C',100],['XC',90],['L',50],['XL',40],['X',10],['IX',9],['V',5],['IV',4],['I',1]];
       let result = '';
-      romans.forEach(([letter, value]) => {
-        while (num >= value) {
-          result += letter;
-          num -= value;
-        }
-      });
+      romans.forEach(([letter, value]) => { while (num >= value) { result += letter; num -= value; }});
       return result.toLowerCase();
     }
 
-    // Load saved state from localStorage on page load
     window.addEventListener('load', () => {
       inputEl.value = localStorage.getItem(STORAGE.INPUT) || '';
       formatEl.value = localStorage.getItem(STORAGE.FORMAT) || '1';
@@ -213,7 +129,6 @@
       copyBtn.disabled = !outputEl.value.trim();
     });
 
-    // Save current state to localStorage
     function saveState() {
       localStorage.setItem(STORAGE.INPUT, inputEl.value);
       localStorage.setItem(STORAGE.FORMAT, formatEl.value);
@@ -221,87 +136,45 @@
       localStorage.setItem(STORAGE.OUTPUT, outputEl.value);
     }
 
-    /**
-     * Remove existing numeric or Roman prefixes from a line
-     * @param {string} line - The line to sanitize
-     * @returns {string} The cleaned line without prefixes
-     */
     function stripPrefix(line) {
       return line.replace(/^\s*([0-9]+|[a-zA-Z]|[ivxlcdmIVXLCDM]+)\.[ \t]*/, '');
     }
 
-    /**
-     * Generate the numbered list based on user input and options
-     */
     function numberList() {
-      const lines = inputEl.value
-        .split(/\r?\n/)
-        .map(line => stripPrefix(line.trim()))
-        .filter(line => line);
-
+      const lines = inputEl.value.split(/\r?\n/).map(l => stripPrefix(l.trim())).filter(l => l);
       const format = formatEl.value;
-      const numbered = lines.map((line, index) => {
+      const numbered = lines.map((line, i) => {
         let prefix;
         switch(format) {
-          case 'a':
-            prefix = String.fromCharCode(97 + index) + '.';
-            break;
-          case 'A':
-            prefix = String.fromCharCode(65 + index) + '.';
-            break;
-          case 'i':
-            prefix = toRoman(index + 1) + '.';
-            break;
-          default:
-            prefix = (index + 1) + '.';
+          case 'a': prefix = String.fromCharCode(97 + i) + '.'; break;
+          case 'A': prefix = String.fromCharCode(65 + i) + '.'; break;
+          case 'i': prefix = toRoman(i+1) + '.'; break;
+          default: prefix = (i+1) + '.';
         }
         return `${prefix} ${line}`;
       });
-
-      // Display numbered list in output area
-      outputEl.value = newlineEl.checked
-        ? numbered.join('\n\n')
-        : numbered.join('\n');
-
+      outputEl.value = newlineEl.checked ? numbered.join('\n\n') : numbered.join('\n');
       copyBtn.disabled = numbered.length === 0;
       saveState();
     }
 
-    /**
-     * Remove numbering from the list and display cleaned list in output
-     */
     function removeNumbers() {
-      const cleaned = inputEl.value
-        .split(/\r?\n/)
-        .map(line => stripPrefix(line.trim()))
-        .filter(line => line)
-        .join('\n');
-      // Update output area with cleaned list
-      outputEl.value = cleaned;
-      copyBtn.disabled = cleaned.length === 0;
+      const lines = inputEl.value.split(/\r?\n/).map(l => stripPrefix(l.trim())).filter(l => l);
+      outputEl.value = newlineEl.checked ? lines.join('\n\n') : lines.join('\n');
+      copyBtn.disabled = lines.length === 0;
       saveState();
     }
 
-    /**
-     * Show a toast message
-     * @param {string} message - The message to display
-     */
-    function showToast(message) {
-      toast.textContent = message;
+    function showToast(msg) {
+      toast.textContent = msg;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2000);
     }
 
-    /**
-     * Copy the generated list to the clipboard and show a toast
-     */
     function copyToClipboard() {
-      navigator.clipboard.writeText(outputEl.value).then(() => {
-        showToast('Copied to clipboard!');
-      });
+      navigator.clipboard.writeText(outputEl.value).then(() => showToast('Copied to clipboard!'));
     }
 
-    // Event listeners for user interactions
     inputEl.addEventListener('input', saveState);
     formatEl.addEventListener('change', saveState);
     newlineEl.addEventListener('change', saveState);
